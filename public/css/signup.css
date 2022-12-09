@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+body {
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+  font-family: 'Open Sans', sans-serif;
+  transition: all .2s cubic-bezier(.25,.46,.45,.94);
+}
+
+.background {
+  /* background-image: url(../images/resturant.jpg); */
+  height: auto;
+}
+
+.bg-transparent{
+    background: rgba(255, 166, 0, 0.1) !important;
+}
+
+.bg-transparent-user{
+  background: rgba(255, 255, 255, 0.912) !important;
+
+}
+
+.button-style{
+  width: 100% !important;
+  background: #d70f62 !important;
+  border: #d70f62 !important;
+  height: 46px;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 700 !important;
+  transition: all .2s cubic-bezier(.25,.46,.45,.94);
+}
+.button-style:hover{
+  background: #c90e5c !important;
+  border: #d70f62 !important;
+}
+
+.link-style{
+  color: #d70f62 !important;
+  text-decoration: none;
+}
+
+.link-style:hover{
+  color: #c90e5c;
+}
+
+
+/* for removing bootstrap border on focous */
+
+.shadow-remove:focus {
+  border: 0px !important;
+  box-shadow: none !important;
+}
+
+.form-outline input:focus {
+  border-bottom: 1px solid black;
+  border-top: 0px;
+  border-left: 0px;
+  border-right: 0px;
+  border-radius: 0px;
+  transition: 0.4s ease-in-out;
+  box-shadow: none;
+}
+
+.outline-remove:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.borderradius-remove{
+  border-radius: 0px !important;
+}
+
+.addshadow{
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.15);
+}
+
