@@ -2,7 +2,6 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const sessions = require('express-session');
 const path = require('path');
-const nodemailer = require('nodemailer');
 const app = express();
 
 const dotenv = require("dotenv");
@@ -28,6 +27,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/store', {
 
 // app.use(fileUpload());
 app.use(cookieParser());
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static('views'));

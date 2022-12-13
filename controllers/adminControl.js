@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 const Users = require('../models/signupModel');
-// const Categories = require('../models/categories');
+const Categories = require('../models/categories');
 const Products = require('../models/products');
 
 
@@ -22,7 +22,7 @@ const path = require('path')
 // })
 
 // upload.single("image")
-// puton data enctype="multipart/form=data"   
+// puton data enctype="multipart/form=data"  
 // tyoe file name image
 // const upload = multer({storage: storage})
 
@@ -139,86 +139,86 @@ const logout = (req, res) => {
   res.redirect('/user/login');
 };
 
-// const getAdminCategory = async (req, res) => {
-//   const { session } = req;
-//   if (session.userid && session.accountType === 'admin') {
-//     try {
-//       const categories = await Categories.find();
-//       res.render('admin/category', { categories });
-//     } catch (error) {
-//       console.log(error.message);
-//     }
-//   }
-// };
+const getAdminCategory = async (req, res) => {
+  const { session } = req;
+  if (session.userid && session.accountType === 'admin') {
+    try {
+      const categories = await Categories.find();
+      res.render('admin/category', { categories });
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+};
 
-// const getAddCategory = (req, res) => {
-//   const { session } = req;
-//   if (session.userid && session.accountType === 'admin') {
-//     res.render('admin/addCategory');
-//   } else {
-//     res.redirect('/admin/login');
-//   }
-// };
+const getAddCategory = (req, res) => {
+  const { session } = req;
+  if (session.userid && session.accountType === 'admin') {
+    res.render('admin/addCategory');
+  } else {
+    res.redirect('/admin/login');
+  }
+};
 
-// const postAddCategory = async (req, res) => {
-//   try {
-//     console.log(req.body);
-//     const categories = new Categories({
-//       name: req.body.name,
-//       description: req.body.description,
-//     });
-//     const categoriesData = await categories.save();
-//     if (categoriesData) {
-//       res.redirect('/admin/adminCategory');
-//     } else {
-//       res.render('admin/addCategory');
-//     }
-//   } catch (error) {
-//     console.log(error.message);
-//   }
-// };
+const postAddCategory = async (req, res) => {
+  try {
+    console.log(req.body);
+    const categories = new Categories({
+      name: req.body.name,
+      description: req.body.description,
+    });
+    const categoriesData = await categories.save();
+    if (categoriesData) {
+      res.redirect('/admin/adminCategory');
+    } else {
+      res.render('admin/addCategory');
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 
-// const getEditCategory = async (req, res) => {
-//   const { session } = req;
-//   if (session.userid && session.accountType === 'admin') {
-//     const { id } = req.params;
-//     console.log(id);
-//     const categories = await Categories.findOne({ _id: id });
-//     res.render('admin/editCategory', { categoriesData: categories });
-//   } else {
-//     res.redirect('/admin/login');
-//   }
-// };
+const getEditCategory = async (req, res) => {
+  const { session } = req;
+  if (session.userid && session.accountType === 'admin') {
+    const { id } = req.params;
+    console.log(id);
+    const categories = await Categories.findOne({ _id: id });
+    res.render('admin/editCategory', { categoriesData: categories });
+  } else {
+    res.redirect('/admin/login');
+  }
+};
 
-// const postEditCategory = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     console.log(req.params.id);
-//     const categoriesData = await Categories.updateOne({ _id: id }, {
-//       name: req.body.name,
-//       description: req.body.description,
-//     });
-//     if (categoriesData) {
-//       res.redirect('/admin/adminCategory');
-//     } else {
-//       res.render('admin/editCategory');
-//     }
-//   } catch (error) {
-//     console.log(error.message);
-//   }
-// };
+const postEditCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(req.params.id);
+    const categoriesData = await Categories.updateOne({ _id: id }, {
+      name: req.body.name,
+      description: req.body.description,
+    });
+    if (categoriesData) {
+      res.redirect('/admin/adminCategory');
+    } else {
+      res.render('admin/editCategory');
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 
-// const getDeleteCategory = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     console.log(id);
-//     await Categories.deleteOne({ _id: id }).then(() => {
-//       res.redirect('/admin/adminCategory');
-//     });
-//   } catch (error) {
-//     console.log(error.message);
-//   }
-// };
+const getDeleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(id);
+    await Categories.deleteOne({ _id: id }).then(() => {
+      res.redirect('/admin/adminCategory');
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 
 const getAdminProducts = async (req, res) => {
   const { session } = req;
@@ -329,7 +329,7 @@ module.exports = {
   unblockUser,
   admin_edit_user,
   edit_post,
-  // getAdminCategory,
+  getAdminCategory,
   // getAddCategory,
   // postAddCategory,
   // getEditCategory,
