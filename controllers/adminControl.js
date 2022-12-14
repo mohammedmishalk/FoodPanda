@@ -4,27 +4,8 @@ const Categories = require('../models/categories');
 const Products = require('../models/products');
 
 
-var fs = require('fs');
+
 require('dotenv/config');
-
-
-const multer = require('multer')
-const path = require('path')
-
-// const storage = multer.diskStorage({
-//      destination: (req, file,callback)=>{
-//           callback(null, './public/images')
-//      },
-//      filename: (req, file, callback)=>{
-//           console.log(file)
-//           callback(null, Date.now()+ path.extname(file.originalname))
-//      }
-// })
-
-// upload.single("image")
-// puton data enctype="multipart/form=data"  
-// tyoe file name image
-// const upload = multer({storage: storage})
 
 
 let message = '';
@@ -151,6 +132,8 @@ const getAdminCategory = async (req, res) => {
   }
 };
 
+
+
 const getAddCategory = (req, res) => {
   const { session } = req;
   if (session.userid && session.accountType === 'admin') {
@@ -161,14 +144,16 @@ const getAddCategory = (req, res) => {
 };
 
 const postAddCategory = async (req, res) => {
+  
   try {
-    console.log(req.body);
+   console.log(req.body)
     const categories = new Categories({
-      name: req.body.name,
-      description: req.body.description,
+      name: req.body.cat,
+      description: req.body.des,
+     
     });
-    const categoriesData = await categories.save();
-    if (categoriesData) {
+    const Data = await categories.save();
+    if (Data){
       res.redirect('/admin/adminCategory');
     } else {
       res.render('admin/addCategory');
@@ -177,6 +162,10 @@ const postAddCategory = async (req, res) => {
     console.log(error.message);
   }
 };
+  
+  
+  
+ 
 
 const getEditCategory = async (req, res) => {
   const { session } = req;
@@ -195,8 +184,8 @@ const postEditCategory = async (req, res) => {
     const { id } = req.params;
     console.log(req.params.id);
     const categoriesData = await Categories.updateOne({ _id: id }, {
-      name: req.body.name,
-      description: req.body.description,
+      name: req.body.cat,
+      description: req.body.des,
     });
     if (categoriesData) {
       res.redirect('/admin/adminCategory');
@@ -233,9 +222,9 @@ const getAdminProducts = async (req, res) => {
 const getAddProduct = async (req, res) => {
   const { session } = req;
   if (session.userid && session.accountType === 'admin') {
-    // const categories = await Categories.find();
+    const categories = await Categories.find();
     // console.log(categories);
-    res.render('admin/adminAddProduct');
+    res.render('admin/adminAddProduct', { categories });
   } else {
     res.redirect('/admin/login');
   }
@@ -268,45 +257,46 @@ const postAddProduct = async (req, res) => {
 
 
 
-const getEditProduct = async (req, res) => {
-  try {
-    const { id } = req.params;
-    console.log(id);
-    await Products.findOne({ _id: id }).then((product) => {
-      if (product) {
-        res.render('admin/editProduct', { productsData: product });
-      } else {
-        res.redirect('/admin/products');
-      }
-    });
-  } catch (error) {
-    console.log(error.message);
+const getEditProduct = (req, res) => {
+  const session = req.session;
+  if (session.userid && session.accountType == "admin") {
+    const finding = Products.find({ _id: req.params.id })
+      .then((result) => {
+        const data = result;
+        res.render("admin/editProduct", { data });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  } else {
+    res.redirect("/");
   }
 };
 
-const postEditProduct = async (req, res) => {
-  try {
-    const { id } = req.params;
-    console.log(req.params.id);
-    const productsData = await Products.updateOne({ _id: id }, {
-      productName: req.body.productName,
-      description: req.body.description,
-      productCategory: req.body.productCategory,
-      stock: req.body.stock,
-      cost: req.body.cost,
-      image: req.body.image,
-      soldCount: req.body.soldCount,
-      discount: req.body.discount,
-    });
-    if (productsData) {
-      res.redirect('/admin/products');
-    } else {
-      res.render('admin/editProduct');
+const postEditProduct = (req, res) => {
+  console.log(req.body);
+  const update = Products.findOneAndUpdate(
+    { _id: req.params.id },
+    {
+      item_name : req.body.item_name,
+      des : req.body.des,
+      price: req.body.price,
+      category: req.body.cat,
+     
     }
-  } catch (error) {
-    console.log(error.message);
-  }
+  )
+    .then((result) => {
+      console.log(result);
+      message = "product data updated";
+      res.redirect("/admin/products");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
+
+
+
 
 const getDeleteProduct = async (req, res) => {
   try {
@@ -330,11 +320,11 @@ module.exports = {
   admin_edit_user,
   edit_post,
   getAdminCategory,
-  // getAddCategory,
-  // postAddCategory,
-  // getEditCategory,
-  // postEditCategory,
-  // getDeleteCategory,
+  getAddCategory,
+  postAddCategory,
+  getEditCategory,
+  postEditCategory,
+  getDeleteCategory,
   getAdminProducts,
   getAddProduct,
   postAddProduct,

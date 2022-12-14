@@ -4,7 +4,7 @@ const Users = require("../models/signupModel");
 const bcrypt = require("bcryptjs");
 const sessions = require('express-session');
 
-
+const Orders = require('../models/orders');
 const Products = require("../models/products");
 const nodemailer = require("nodemailer");
 
@@ -37,7 +37,7 @@ const loginPost = async (req, res) => {
         const passwordMatch = await bcrypt.compare(password, userData.password);
 
         if (passwordMatch) {
-          req.sessions.user_id = userData._id;
+          // req.sessions.user_id = userData._id;
 
           if (userData.isBlock === false) {
             console.log(userData.isBlock);
@@ -77,6 +77,22 @@ const userHomeRender = async (req, res) => {
   } else {
     const customer = false;
     res.render("user/userHome", { customer, products });
+  }
+};
+
+
+const userfood = async (req, res) => {
+  const { session } = req;
+  // const categories = await Categories.find();
+  const products = await Products.find();
+  // console.log(session.userid);
+  if (session.userid && session.accountType === "user") {
+    // console.log(session.userid);
+    const customer = true;
+    res.render("user/foodview", { customer, products });
+  } else {
+    const customer = false;
+    res.render("user/foodview", { customer, products });
   }
 };
 
@@ -157,72 +173,14 @@ const PostOtp = async (req, res) => {
   }
 };
 
-// Users.findOne({ email }).then((result) => {
-//   if (result) {
-//     message = "Email is already registered";
-//     res.redirect("/user/signup");
-//   } else if (password) {
-//     const user = new Users({
-//       full_name: firstname,
-//       email: email,
-//       phone: phone,
-//       password: password,
-//       account_type: "user",
-//     });
-//     user.save().then((results) => {
-//       console.log(results);
-//       message = "Successfully Registered";
-//       res.render("user/successfull");
-//       message = "";
-//     });
-//   } else {
-//     message = "passwords do not match ";
-//     res.redirect("/user/signup");
-//   }
-// });
 
-// Get Register
-
-// const PostRegister =  async (req, res) => {
-
-//   name = req.body.name;
-//   email = req.body.email;
-//   phone = req.body.phone;
-//   password = req.body.password;
-
-//   let mailDetails = {
-//     from: "shobinshaju@gmail.com",
-//     to: email,
-//     subject: "STARLIGHT ACCOUNT REGISTRATION",
-//     html: `<p>YOUR OTP FOR REGISTERING IN STARLIGHT IS ${OTP}</p>`,
-//   };
-
-//   const user = await User.findOne({ email: email });
-//   if (user) {
-
-//       res.render('user/register',{message: 'Already Registered'});
-
-//   } else {
-//     mailTransporter.sendMail(mailDetails, function (err, data) {
-//       if (err) {
-//         console.log("Error Occurs");
-//       } else {
-//         console.log("Email Sent Successfully");
-//         res.redirect("/otp");
-//       }
-//     });
-//   }
-// }
-
-// Get Otp
-
-// Post Otp
 
 module.exports = {
   loginRender,
   loginPost,
   logout,
   userHomeRender,
+  userfood,
   signupPost,
   signupRender,
   GetOtp,

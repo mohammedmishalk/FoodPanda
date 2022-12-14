@@ -9,6 +9,7 @@ router.get('/logout', controller.logout);
 router.get('/signup', controller.signupRender);
 router.post('/signup', controller.signupPost);
 router.get('/home', controller.userHomeRender);
+router.get('/food', controller.userfood);
 // router.get('/productDetail/:id', controller.getProductDetail);
 router.get('/otp', controller.GetOtp)
 router.post('/otp', controller.PostOtp) 

@@ -1,8 +1,7 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-const { Schema } = mongoose;
-
-const categories = new Schema({
+const categoriedata = new Schema({
   name: {
     type: String,
     required: true,
@@ -11,6 +10,9 @@ const categories = new Schema({
     type: String,
     required: true,
   },
+ 
+ 
 });
-const categoriesData = mongoose.model('Categories', categories);
-module.exports = categoriesData;
+
+const categories = mongoose.model("Categories", categoriedata);
+module.exports = categories;

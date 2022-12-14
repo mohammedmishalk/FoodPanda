@@ -16,6 +16,7 @@ const ProdectSchema = new Schema({
   },
   category: {
     type: String,
+    ref: 'categories',
     required: true,
   },
   image: {
