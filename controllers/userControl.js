@@ -3,7 +3,7 @@ const Users = require("../models/signupModel");
 // const Categories = require('../models/categories');
 const bcrypt = require("bcryptjs");
 const sessions = require('express-session');
-
+var Cart =require('../models/cart');
 const Orders = require('../models/orders');
 const Products = require("../models/products");
 const nodemailer = require("nodemailer");
@@ -174,6 +174,68 @@ const PostOtp = async (req, res) => {
 };
 
 
+ const cart=(req, res, next)=> {
+  if(!req.session.cart){
+      return res.render('user/cart', {products: null});
+  }
+  var cart = new Cart(req.session.cart);
+  res.render('user/cart', {products: cart.generateArray(), totalPrice: cart.totalPrice});
+  
+}
+
+addCart= (req,res,next)=> {
+  var productId = req.params.id;
+  var cart = new Cart(req.session.cart ? req.session.cart : {});
+
+  Products.findById(productId, function (err, product) {
+      if(err){
+          return res.redirect('/user/food');
+      }
+
+      cart.add(product, product.id);
+      req.session.cart = cart;
+      console.log(req.session.cart);
+      res.redirect('/user/food');
+
+  });
+}
+
+/*AddbyOne*/
+add= (req,res,next)=> {
+
+  var productId = req.params.id;
+  var cart = new Cart(req.session.cart ? req.session.cart : {});
+
+  cart.addByOne(productId);
+  req.session.cart=cart;
+  res.redirect('/user/cart');
+
+}
+
+reduce= (req,res,next)=> {
+
+  var productId = req.params.id;
+  var cart = new Cart(req.session.cart ? req.session.cart : {});
+
+  cart.reduceByOne(productId);
+  req.session.cart=cart;
+  res.redirect('/user/cart');
+}
+
+
+remove= (req,res,next) =>{
+
+  var productId = req.params.id;
+  var cart = new Cart(req.session.cart ? req.session.cart : {});
+
+  cart.removeAll(productId);
+  req.session.cart=cart;
+  res.redirect('/user/cart');
+}
+
+
+
+
 
 module.exports = {
   loginRender,
@@ -185,4 +247,9 @@ module.exports = {
   signupRender,
   GetOtp,
   PostOtp,
+  cart,
+  addCart,
+  add,
+  reduce,
+  remove,
 };

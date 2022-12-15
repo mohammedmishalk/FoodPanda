@@ -5,27 +5,10 @@ const path = require('path');
 const app = express();
 
 const dotenv = require("dotenv");
-
+require('./models/database-connection')
 
 dotenv.config();
 
-const mongoose = require('mongoose');
-// const bcrypt = require('bcrypt');
-
-mongoose.connect('mongodb://127.0.0.1:27017/store', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}, (err) => {
-  if (err) {
-    // eslint-disable-next-line no-console
-    console.log(err);
-  } else {
-    // eslint-disable-next-line no-console
-    console.log('successfully connected');
-  }
-});
-
-// app.use(fileUpload());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -74,6 +57,5 @@ app.use((req, res) => {
 });
 
 app.listen(3000, () => {
-  // eslint-disable-next-line no-console
-  console.log('server running on port 3000');
+  console.log('http://localhost:3000/');
 });
