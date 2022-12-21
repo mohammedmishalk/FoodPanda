@@ -11,7 +11,13 @@ const ProdectSchema = new Schema({
     required: true,
   },
   price: {
-    type: String,
+    type: Number,
+    required: true,
+  },
+  stock: {
+    type: Number,
+    min: 0,
+    max: 250,
     required: true,
   },
   category: {
@@ -22,6 +28,14 @@ const ProdectSchema = new Schema({
   image: {
     type: String,
     required: true,
+  },
+  soldCount: {
+    type: Number,
+    required: true,
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
   },
  
 });

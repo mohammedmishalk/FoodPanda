@@ -1,12 +1,11 @@
-/* eslint-disable no-console */
+const mongoose = require('mongoose');
 const Users = require("../models/signupModel");
-// const Categories = require('../models/categories');
+const Categories = require('../models/categories');
 const bcrypt = require("bcryptjs");
-const sessions = require('express-session');
-var Cart =require('../models/cart');
+const Carts = require('../models/carts');
 const Orders = require('../models/orders');
-const Products = require("../models/products");
 const nodemailer = require("nodemailer");
+const Products = require("../models/products");
 
 let message = "";
 var email;
@@ -20,10 +19,21 @@ var mailTransporter = nodemailer.createTransport({
 });
 const OTP = `${Math.floor(1000 + Math.random() * 9000)}`;
 
+
+
+
+
+
 const loginRender = (req, res) => {
-  res.render("user/login", { message });
-  message = "";
+  const session = req.session;
+  const customer = false;
+  if (session.userid) {
+    res.redirect('/user/home');
+  }
+  res.render('user/login', { message, customer });
+  message = '';
 };
+
 
 const loginPost = async (req, res) => {
   try {
@@ -42,8 +52,9 @@ const loginPost = async (req, res) => {
           if (userData.isBlock === false) {
             console.log(userData.isBlock);
             if (passwordMatch) {
-              sessions.accountType = "user";
-              sessions.userid = userData.email;
+              const { session } = req;
+              session.account_type = "user";
+              session.userid = userData._id;
               res.redirect("/user/home");
             } else {
               message = "wrong password";
@@ -64,37 +75,57 @@ const loginPost = async (req, res) => {
     }
   };
 
+  const userHomeRender = async (req, res) => {
+    const { session } = req;
+    let count = 0;
+  
+    const products = await Products.find().sort({ soldCount: -1 }).limit(6);
+    const discounts = await Products.find({ discount: true });
+    if (session.userid && session.account_type === 'user') {
+      const userData = await Users.findOne({ _id: session.userid });
+      const cart = await Carts.find({ userId: userData._id });
+      if (cart.length) {
+        count = cart[0].product.length;
+      }
+      const customer = true;
+      res.render('user/userhome', { customer, products, count, discounts });
+    } else {
+      const customer = false;
+      res.render('user/userhome', { customer, products, count, discounts });
+    }
+  };
+  
+  const getProductDetail = async (req, res) => {
+    try {
+      const { session } = req;
+      const { id } = req.params;
+      const products = await Products.findOne({ _id: id });
+  
+      if (session.userid && session.account_type === 'user') {
+        let count = 0;
+        const userData = await Users.findOne({ _id: session.userid });
+        const cart = await Carts.find({ userId: userData._id });
+  
+        const customer = true;
+        if (cart.length) {
+          count = cart[0].product.length;
+        } else {
+          count = 0;
+        }
+        res.render('user/foodview', { customer, products, count, session });
+      } else {
+        const count = null;
+        const customer = false;
+        res.render('user/foodview', { customer, products, count, session });
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
-const userHomeRender = async (req, res) => {
-  const { session } = req;
-  // const categories = await Categories.find();
-  const products = await Products.find();
-  // console.log(session.userid);
-  if (session.userid && session.accountType === "user") {
-    // console.log(session.userid);
-    const customer = true;
-    res.render("user/userhome", { customer, products });
-  } else {
-    const customer = false;
-    res.render("user/userHome", { customer, products });
-  }
-};
+ 
 
 
-const userfood = async (req, res) => {
-  const { session } = req;
-  // const categories = await Categories.find();
-  const products = await Products.find();
-  // console.log(session.userid);
-  if (session.userid && session.accountType === "user") {
-    // console.log(session.userid);
-    const customer = true;
-    res.render("user/foodview", { customer, products });
-  } else {
-    const customer = false;
-    res.render("user/foodview", { customer, products });
-  }
-};
 
 const logout = (req, res) => {
   const { session } = req;
@@ -174,64 +205,208 @@ const PostOtp = async (req, res) => {
 };
 
 
- const cart=(req, res, next)=> {
-  if(!req.session.cart){
-      return res.render('user/cart', {products: null});
-  }
-  var cart = new Cart(req.session.cart);
-  res.render('user/cart', {products: cart.generateArray(), totalPrice: cart.totalPrice});
-  
-}
 
-addCart= (req,res,next)=> {
-  var productId = req.params.id;
-  var cart = new Cart(req.session.cart ? req.session.cart : {});
 
-  Products.findById(productId, function (err, product) {
-      if(err){
-          return res.redirect('/user/food');
+const getCart = async (req, res) => {
+  const { session } = req;
+  const userData = mongoose.Types.ObjectId(session.userid);
+  const customer = true;
+  const cart = await Carts.aggregate([
+    {
+      $match: { userId: userData },
+    },
+    {
+      $unwind: '$product',
+    },
+    {
+      $project: {
+        productItem: '$product.productId',
+        productQuantity: '$product.quantity',
+      },
+    },
+    {
+      $lookup: {
+        from: 'products',
+        localField: 'productItem',
+        foreignField: '_id',
+        as: 'productDetail',
+      },
+    },
+    {
+      $project: {
+        productItem: 1,
+        productQuantity: 1,
+        productDetail: { $arrayElemAt: ['$productDetail', 0] },
+      },
+    },
+    {
+      $addFields: {
+        productPrice: {
+          $sum: { $multiply: ['$productQuantity', '$productDetail.price'] },
+        },
+      },
+    },
+  ]);
+
+  const sum = cart.reduce((accumulator, object) => accumulator + object.productPrice, 0);
+  const count = cart.length;
+  res.render('user/cart', { session, customer, cart, count, sum });
+};
+
+const getAddToCart = async (req, res) => {
+  const id = req.params.id;
+  const userId = req.session.userid;
+  const products = await Products.findOne({ _id: id });
+  const userData = await Users.findOne({ _id: userId });
+  const objId = mongoose.Types.ObjectId(id);
+
+  // const idUser = mongoose.Types.ObjectId(userData._id);
+  const proObj = {
+    productId: objId,
+    quantity: 1,
+  };
+  if (products.stock >= 1) {
+
+    
+    const userCart = await Carts.findOne({ userId: userData._id });
+    if (userCart) {
+      const proExist = userCart.product.findIndex((product) => product.productId == id);
+      if (proExist !== -1) {
+        await Carts.aggregate([
+          {
+            $unwind: '$product',
+          },
+        ]);
+        await Carts.updateOne(
+          { userId: userData._id, 'product.productId': objId },
+          { $inc: { 'product.$.quantity': 1 } },
+        );
+        res.redirect(`/user/food/${id}`);
+      } else {
+        Carts
+          .updateOne({ userId: userData._id }, { $push: { product: proObj } })
+          .then(() => {
+            res.redirect(`/user/food/${id}`);
+          });
       }
+    } else {
+      const newCart = new Carts({
+        userId: userData._id,
+        product: [
+          {
+            productId: objId,
+            quantity: 1,
+          },
+        ],
+      });
+      newCart.save().then(() => {
+        // res.json({ status: true });
+      });
+    }
+  } else {
+    res.json({ stock: true });
+  }
+};
 
-      cart.add(product, product.id);
-      req.session.cart = cart;
-      console.log(req.session.cart);
-      res.redirect('/user/food');
+const cartQuantity = async (req, res, next) => {
+  const data = req.body;
+  data.count = Number(data.count);
+  data.quantity = Number(data.quantity);
+  const objId = mongoose.Types.ObjectId(data.product);
+  const productDetail = await Products.findOne({ _id: data.product });
+  if (
+    (data.count == -1 && data.quantity == 1)
+    || (data.count == 1 && data.quantity == productDetail.stock)
+  ) {
+    res.json({ quantity: true });
+  } else {
+    await Carts
+      .aggregate([
+        {
+          $unwind: '$product',
+        },
+      ])
+      .then(() => {
+        Carts
+          .updateOne(
+            { _id: data.cart, 'product.productId': objId },
+            { $inc: { 'product.$.quantity': data.count } },
+          )
+          .then(() => {
+            res.json({ status: true });
+            next();
+          });
+      });
+  }
+};
 
+const postDeleteProduct = (req, res) => {
+  const cartid = req.body.cart;
+  const pid = req.body.product;
+  Carts.updateOne(
+    { _id: cartid },
+    { $pull: { product: { productId: pid } } },
+  ).then(() => {
+    // console.log(cart);
+    res.redirect('/user/cart');
+  }).catch((error) => {
+    console.log(error);
   });
-}
+};
 
-/*AddbyOne*/
-add= (req,res,next)=> {
+const getCheckout = async (req, res) => {
+  const { session } = req;
+  const uid = mongoose.Types.ObjectId(session.userid);
+  const customer = true;
+  const cart = await Carts.aggregate([
+    {
+      $match: { userId: uid },
+    },
+    {
+      $unwind: '$product',
+    },
+    {
+      $project: {
+        productItem: '$product.productId',
+        productQuantity: '$product.quantity',
+      },
+    },
+    {
+      $lookup: {
+        from: 'products',
+        localField: 'productItem',
+        foreignField: '_id',
+        as: 'productDetail',
+      },
+    },
+    {
+      $project: {
+        productItem: 1,
+        productQuantity: 1,
+        productDetail: { $arrayElemAt: ['$productDetail', 0] },
+      },
+    },
+    {
+      $addFields: {
+        productPrice: {
+          $sum: { $multiply: ['$productQuantity', '$productDetail.cost'] },
+        },
+      },
+    },
+  ]);
 
-  var productId = req.params.id;
-  var cart = new Cart(req.session.cart ? req.session.cart : {});
-
-  cart.addByOne(productId);
-  req.session.cart=cart;
-  res.redirect('/user/cart');
-
-}
-
-reduce= (req,res,next)=> {
-
-  var productId = req.params.id;
-  var cart = new Cart(req.session.cart ? req.session.cart : {});
-
-  cart.reduceByOne(productId);
-  req.session.cart=cart;
-  res.redirect('/user/cart');
-}
+  const sum = cart.reduce((accumulator, object) => accumulator + object.productPrice, 0);
+  const count = cart.length;
+  Address.find({ user_id: uid }).then((address) => {
+    res.render('user/checkout', {
+      allData: cart, count, sum, name: req.session.firstName, address, customer,
+    });
+  }).catch((e) => {
+    console.log(e);
+  });
+};
 
 
-remove= (req,res,next) =>{
-
-  var productId = req.params.id;
-  var cart = new Cart(req.session.cart ? req.session.cart : {});
-
-  cart.removeAll(productId);
-  req.session.cart=cart;
-  res.redirect('/user/cart');
-}
 
 
 
@@ -242,14 +417,17 @@ module.exports = {
   loginPost,
   logout,
   userHomeRender,
-  userfood,
+  getProductDetail,
   signupPost,
   signupRender,
   GetOtp,
   PostOtp,
-  cart,
-  addCart,
-  add,
-  reduce,
-  remove,
+  cartQuantity,
+  postDeleteProduct,
+  getCart,
+  getAddToCart,
+  getCheckout,
+  
+ 
+ 
 };

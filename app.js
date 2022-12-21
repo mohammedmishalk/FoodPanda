@@ -1,11 +1,14 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const sessions = require('express-session');
+const userRoutes = require('./routes/userRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const path = require('path');
 const app = express();
 
 const dotenv = require("dotenv");
-require('./models/database-connection')
+const dbconnect=require('./models/database-connection')
+dbconnect.connectDB();
 
 dotenv.config();
 
@@ -33,17 +36,12 @@ app.use((req, res, next) => {
   next();
 });
 
-const userRoutes = require('./routes/userRoutes');
-
 app.use('/user', userRoutes);
-
-const adminRoutes = require('./routes/adminRoutes');
-
 app.use('/admin', adminRoutes);
+
 
 app.get('/', (req, res) => {
   const { session } = req;
-  // eslint-disable-next-line no-console
   console.log(session.userid);
   if (session.userid) {
     res.redirect('/user/home');
@@ -52,9 +50,14 @@ app.get('/', (req, res) => {
   }
 });
 
+
+
+
 app.use((req, res) => {
   res.status(404).render('404');
 });
+
+
 
 app.listen(3000, () => {
   console.log('http://localhost:3000/');

@@ -30,7 +30,7 @@
     <section class="ftco-section">
     
     </section>
-    
+    <% products.forEach( product=> { %>
     
     <section class="ftco-section img" style="background-image: url(/img/bg_4.jpg);">
         <div class="container">
@@ -38,8 +38,8 @@
                 <div class="col-md-6 heading-section deal-of-the-day ">
                     <span class="subheading" style="color: white">Best Price For You</span>
                     <h2 class="mb-4">Deal of the day</h2>
-                    <h3><a href="/user/food" style="color: white">Pesto Zoodles</a></h3>
-                    <span class="price">RS. 150 <a href="/user/food" style="color: white">now at Rs. 100 only</a></span>
+                    <h3><a href="/user/productDetail/<%= product._id %>" style="color: white">Pesto Zoodles</a></h3>
+                    <span class="price">RS. 150 <a href="/user/productDetail/<%= product._id %>" style="color: white">now at Rs. 100 only</a></span>
                     <div id="timer" class="d-flex mt-5">
                         <div class="time pl-3" id="hours" style="color: black"></div>
                         <div class="time pl-3" id="minutes" style="color: black"></div>
@@ -49,6 +49,6 @@
             </div>
         </div>
     </section>
-    
+    <% }) %>
     <%- include('../partials/userFooter.ejs') %>
    

@@ -2,7 +2,7 @@
 const Users = require('../models/signupModel');
 const Categories = require('../models/categories');
 const Products = require('../models/products');
-
+const cart = require("../models/carts");
 
 
 require('dotenv/config');
@@ -10,9 +10,13 @@ require('dotenv/config');
 
 let message = '';
 
+
+
+
+
 const adminHomeRender = (req, res) => {
   const { session } = req;
-  if (session.userid && session.accountType === 'admin') {
+  if (session.userid && session.account_type === 'admin') {
     res.render('admin/adminHome');
   } else {
     res.redirect('/admin/login');
@@ -21,7 +25,7 @@ const adminHomeRender = (req, res) => {
 
 const adminLoginRender = (req, res) => {
   const { session } = req;
-  if (session.userid && session.accountType === 'admin') {
+  if (session.userid && session.account_type === 'admin') {
     res.redirect('/admin/home');
   } else {
     res.render('admin/login', { message });
@@ -29,13 +33,13 @@ const adminLoginRender = (req, res) => {
   }
 };
 
-const admin = 'admin@gmail.com';
-const mypassword = '123';
+const admin = "admin@gmail.com";
+const mypassword = "123";
 const adminLoginPost = (req, res) => {
-  if (req.body.email === admin && req.body.password === mypassword) {
+  if (req.body.email == admin && req.body.password == mypassword) {
     const { session } = req;
     session.userid = admin;
-    session.accountType = 'admin';
+    session.account_type = 'admin';
     res.redirect('/admin/home');
   } else {
     message = 'Invalid email or password';
@@ -43,9 +47,10 @@ const adminLoginPost = (req, res) => {
   }
 };
 
+
 const adminUsersRender = async (req, res) => {
   const { session } = req;
-  if (session.userid && session.accountType === 'admin') {
+  if (session.userid && session.account_type === 'admin') {
     const usersData = await Users.find();
     res.render('admin/adminUserView', { users: usersData });
   } else {
@@ -57,7 +62,7 @@ const adminUsersRender = async (req, res) => {
 
 const admin_edit_user = (req, res) => {
   const session = req.session;
-  if (session.userid && session.accountType == "admin") {
+  if (session.userid && session.account_type == "admin") {
     const finding = Users.find({ _id: req.params.id })
       .then((result) => {
         const data = result;
@@ -122,7 +127,7 @@ const logout = (req, res) => {
 
 const getAdminCategory = async (req, res) => {
   const { session } = req;
-  if (session.userid && session.accountType === 'admin') {
+  if (session.userid && session.account_type === 'admin') {
     try {
       const categories = await Categories.find();
       res.render('admin/category', { categories });
@@ -136,7 +141,7 @@ const getAdminCategory = async (req, res) => {
 
 const getAddCategory = (req, res) => {
   const { session } = req;
-  if (session.userid && session.accountType === 'admin') {
+  if (session.userid && session.account_type === 'admin') {
     res.render('admin/addCategory');
   } else {
     res.redirect('/admin/login');
@@ -169,7 +174,7 @@ const postAddCategory = async (req, res) => {
 
 const getEditCategory = async (req, res) => {
   const { session } = req;
-  if (session.userid && session.accountType === 'admin') {
+  if (session.userid && session.account_type === 'admin') {
     const { id } = req.params;
     console.log(id);
     const categories = await Categories.findOne({ _id: id });
@@ -211,7 +216,7 @@ const getDeleteCategory = async (req, res) => {
 
 const getAdminProducts = async (req, res) => {
   const { session } = req;
-  if (session.userid && session.accountType === 'admin') {
+  if (session.userid && session.account_type === 'admin') {
     const productsData = await Products.find();
     res.render('admin/adminProductView', { products: productsData });
   } else {
@@ -221,7 +226,7 @@ const getAdminProducts = async (req, res) => {
 
 const getAddProduct = async (req, res) => {
   const { session } = req;
-  if (session.userid && session.accountType === 'admin') {
+  if (session.userid && session.account_type === 'admin') {
     const categories = await Categories.find();
     // console.log(categories);
     res.render('admin/adminAddProduct', { categories });
@@ -240,6 +245,9 @@ const postAddProduct = async (req, res) => {
       des : req.body.des,
       price: req.body.price,
       category: req.body.cat,
+      stock:req.body.qty,
+      soldCount: 10,
+
       image:IMAGE_PATH,
      
     });
@@ -259,7 +267,7 @@ const postAddProduct = async (req, res) => {
 
 const getEditProduct = (req, res) => {
   const session = req.session;
-  if (session.userid && session.accountType == "admin") {
+  if (session.userid && session.account_type == "admin") {
     const finding = Products.find({ _id: req.params.id })
       .then((result) => {
         const data = result;
