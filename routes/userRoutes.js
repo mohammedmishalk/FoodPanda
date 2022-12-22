@@ -22,11 +22,21 @@ router.get('/productDetail/:id', controller.getProductDetail);
 router.get('/checkout', verifyLogin.userSession, controller.getCheckout);
 router.get('/addToCart/:id', verifyLogin.userSession,controller.getAddToCart);
 router.get('/cart',verifyLogin.userSession, controller.getCart);
-
+router.get('/profile', verifyLogin.userSession, controller.getProfile);
 router.post('/cartQuantity', verifyLogin.userSession, controller.cartQuantity);
 router.post('/deleteProduct', verifyLogin.userSession, controller.postDeleteProduct);
-
-
+router.get('/changePassword', verifyLogin.userSession, controller.getChangePassword);
+router.post('/changePassword', verifyLogin.userSession, controller.postChangePasswod);
+router.get('/addAddress', verifyLogin.userSession, controller.getaddAddress);
+router.post('/addAddress', verifyLogin.userSession, controller.postaddAddress);
+router.get('/editAddress/:id', verifyLogin.userSession, controller.getEditAddress);
+router.post('/editAddress/:id', verifyLogin.userSession, controller.postEditAddress);
+router.get('/deleteAddress/:id', verifyLogin.userSession, controller.getDeleteAddress);
+router.post('/orderConfirmed', verifyLogin.userSession, controller.confirmOrder);
+router.get('/orderSuccess', verifyLogin.userSession, controller.orderSuccess);
+router.get('/orders', verifyLogin.userSession, controller.getOrders);
+router.post('/verifyPayment', verifyLogin.userSession, controller.verifyPayment);
+router.get('/paymentFail', verifyLogin.userSession, controller.paymentFailure);
 
 
 module.exports = router;   
