@@ -9,6 +9,7 @@ const nodemailer = require("nodemailer");
 const Products = require("../models/products");
 const moment = require('moment');
 const crypto = require('crypto');
+const instance = require('../middleware/razorpay');
 
 
 let message = "";
@@ -442,7 +443,7 @@ const getChangePassword = (req, res) => {
 
 const postChangePasswod =async (req, res) => {
   try {
-    const uid = req.session.userID;
+    const uid = req.session.userid;
     const { currentPassword, password } = req.body;
     Users.findOne({ user_id: uid }).then(async (result) => {
       const passwordMatch = await bcrypt.compare(password, result.password);
@@ -552,8 +553,6 @@ const confirmOrder = (req, res) => {
   const uid = mongoose.Types.ObjectId(req.session.userid);
   const paymethod = req.body.pay;
   const adrs = req.body.address;
-  // const { Order } = Orders;
-  // eslint-disable-next-line no-unused-vars
   Users.findOne({ user_id: uid }).then((userData) => {
     Carts.aggregate([
       {
@@ -586,19 +585,18 @@ const confirmOrder = (req, res) => {
       {
         $addFields: {
           productPrice: {
-            $sum: { $multiply: ['$productQuantity', '$productDetail.cost'] },
+            $sum: { $multiply: ['$productQuantity', '$productDetail.price'] },
           },
         },
       },
     ])
       .then((result) => {
-        console.log('required', result);
-        // eslint-disable-next-line no-plusplus
+      
         for (let i = 0; i < result.length; i++) {
           const sold = result[i].productDetail.soldCount + result[i].productQuantity;
           console.log('total sold =', sold);
           Products.updateMany(
-            // eslint-disable-next-line no-underscore-dangle
+           
             { _id: result[i].productDetail._id },
             { soldCount: sold },
           ).then(() => {
@@ -613,7 +611,6 @@ const confirmOrder = (req, res) => {
           const order = new Orders({
             order_id: Date.now(),
             user_id: uid,
-            // eslint-disable-next-line no-underscore-dangle
             address: adrs,
             order_placed_on: moment().format('DD-MM-YYYY'),
             products: cartData.product,
@@ -636,7 +633,7 @@ const confirmOrder = (req, res) => {
                 const amount = done.finalAmount * 100;
                 const options = {
                   amount,
-                  // amountFinal,
+                  
                   currency: 'INR',
                   receipt: `${oid}`,
                 };
@@ -664,7 +661,7 @@ const orderSuccess = (req, res) => {
     { $match: { _id: oid } },
     {
       $lookup: {
-        from: 'users',
+        from: 'logins',
         localField: 'user_id',
         foreignField: 'user_id',
         as: 'user',
@@ -689,7 +686,7 @@ const orderSuccess = (req, res) => {
 const getOrders = async (req, res) => {
   try {
     const customer = true;
-    const name = req.session.full_name;
+    const name = req.session.firstName;
     const uid = req.session.userid;
     await Orders.aggregate([
       {
@@ -745,21 +742,20 @@ const getOrders = async (req, res) => {
   }
 };
 
-
 const verifyPayment = (req, res) => {
   console.log('reached verify paymet');
   const details = req.body;
-  let hmac = crypto.createHmac('sha256', '0jLCJMFP9SLEOQ1prF1JlnOE');
+  let hmac = crypto.createHmac('sha256', 'jSUYpUYNfZItVjdH0mvj4nnl');
   hmac.update(
-    // eslint-disable-next-line operator-linebreak, prefer-template
+   
     details.payment.razorpay_order_id +
-    // eslint-disable-next-line operator-linebreak
+   
     '|' +
-    // eslint-disable-next-line comma-dangle
+    
     details.payment.razorpay_payment_id
   );
   hmac = hmac.digest('hex');
-  // eslint-disable-next-line eqeqeq
+ 
   console.log(`${details.payment.razorpay_signature}signatuer`);
   if (hmac == details.payment.razorpay_signature) {
     const objId = mongoose.Types.ObjectId(details.order.receipt);
@@ -783,8 +779,6 @@ const paymentFailure = (req, res) => {
   console.log(details);
   res.send('payment failed');
 };
-
-
 
 
 module.exports = {

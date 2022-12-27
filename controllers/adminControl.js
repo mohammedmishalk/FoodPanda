@@ -1,8 +1,9 @@
-/* eslint-disable no-console */
+const moment = require('moment');
 const Users = require('../models/signupModel');
 const Categories = require('../models/categories');
 const Products = require('../models/products');
-const cart = require("../models/carts");
+const Orders = require('../models/orders');
+const Coupons = require('../models/coupon');
 
 
 require('dotenv/config');
@@ -318,6 +319,292 @@ const getDeleteProduct = async (req, res) => {
   }
 };
 
+
+
+const getOrders = (req, res) => {
+  try {
+    Orders.aggregate([
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'products.productId',
+          foreignField: '_id',
+          as: 'product',
+        },
+      },
+      {
+        $lookup: {
+          from: 'logins',
+          localField: 'user_id',
+          foreignField: '_id',
+          as: 'userfields',
+        },
+      },
+      {
+        $lookup: {
+          from: 'addresses',
+          localField: 'address',
+          foreignField: '_id',
+          as: 'userAddress',
+        },
+      },
+      {
+        $unwind: '$userfields',
+      },
+    ]).then((result) => {
+      console.log(result);
+      res.render('admin/orders', { allData: result });
+    });
+  } catch (error) {
+    res.redirect('/500');
+  }
+};
+
+
+const changeOrderStatus = (req, res) => {
+  try {
+    const { orderID, paymentStatus, orderStatus } = req.body;
+    Orders.updateOne(
+      { _id: orderID },
+      {
+        paymentStatus, orderStatus,
+      },
+    ).then(() => {
+      res.send('success');
+    }).catch(() => {
+      res.redirect('/500');
+    });
+  } catch (error) {
+    res.redirect('/500');
+  }
+};
+
+const orderCompeleted = (req, res) => {
+  try {
+    const { orderID } = req.body;
+    Orders.updateOne(
+      { _id: orderID },
+      { orderStatus: 'Completed' },
+    ).then(() => {
+      res.send('done');
+    });
+  } catch (error) {
+    res.redirect('/500');
+  }
+};
+
+const orderCancel = (req, res) => {
+  try {
+    const { orderID } = req.body;
+    Orders.updateOne(
+      { _id: orderID },
+      { orderStatus: 'Cancelled', paymentStatus: 'Cancelled' },
+    ).then(() => {
+      res.send('done');
+    });
+  } catch (error) {
+    res.redirect('/500');
+  }
+};
+
+
+const getSalesReport = async (req, res) => {
+  try {
+      const today = moment().startOf('day');
+      const endtoday = moment().endOf('day');
+      const monthstart = moment().startOf('month');
+      const monthend = moment().endOf('month');
+      const yearstart = moment().startOf('year');
+      const yearend = moment().endOf('year');
+      // const today = moment('09-12-2022', 'DD-MM-YYYY').startOf('day');
+      // const endtoday = moment('10-12-2022', 'DD-MM-YYYY').endOf('day');
+      const daliyReport = await model.Order.aggregate([
+          {
+              $match: {
+                  createdAt: {
+                      $gte: today.toDate(),
+                      $lte: endtoday.toDate(),
+                  },
+              },
+          },
+          {
+              $lookup:
+              {
+                  from: 'logins',
+                  localField: 'user_id',
+                  foreignField: 'user_id',
+                  as: 'user',
+              },
+          },
+          {
+              $project: {
+                  order_id: 1,
+                  user: 1,
+                  paymentStatus: 1,
+                  totalAmount: 1,
+                  orderStatus: 1,
+              },
+          },
+      ]);
+      const monthReport = await model.Order.aggregate([
+          {
+              $match: {
+                  createdAt: {
+                      $gte: monthstart.toDate(),
+                      $lte: monthend.toDate(),
+                  },
+              },
+          },
+          {
+              $lookup:
+              {
+                  from: 'logins',
+                  localField: 'user_id',
+                  foreignField: 'user_id',
+                  as: 'user',
+              },
+          },
+          {
+              $project: {
+                  order_id: 1,
+                  user: 1,
+                  paymentStatus: 1,
+                  totalAmount: 1,
+                  orderStatus: 1,
+              },
+          },
+      ]);
+      const yearReport = await model.Order.aggregate([
+          {
+              $match: {
+                  createdAt: {
+                      $gte: yearstart.toDate(),
+                      $lte: yearend.toDate(),
+                  },
+              },
+          },
+          {
+              $lookup:
+              {
+                  from: 'logins',
+                  localField: 'user_id',
+                  foreignField: 'user_id',
+                  as: 'user',
+              },
+          },
+          {
+              $project: {
+                  order_id: 1,
+                  user: 1,
+                  paymentStatus: 1,
+                  totalAmount: 1,
+                  orderStatus: 1,
+              },
+          },
+      ]);
+      res.render('admin/salesReport', { to: daliyReport, mo: monthReport, ye: yearReport });
+  } catch (error) {
+      res.redirect('/500');
+  }
+};
+
+const salesCustomDate = async (req, res) => {
+  try {
+      const { startDate, endDate } = req.body;
+      const start = moment(startDate, 'YYYY-MM-DD').startOf('day');
+      const end = moment(endDate, 'YYYY-MM-DD').endOf('day');
+
+      const cusReport = await model.Order.aggregate([
+          {
+              $match: {
+                  createdAt: {
+                      $gte: start.toDate(),
+                      $lte: end.toDate(),
+                  },
+              },
+          },
+          {
+              $lookup:
+              {
+                  from: 'logins',
+                  localField: 'user_id',
+                  foreignField: 'user_id',
+                  as: 'user',
+              },
+          },
+          {
+              $project: {
+                  order_id: 1,
+                  user: 1,
+                  paymentStatus: 1,
+                  totalAmount: 1,
+                  orderStatus: 1,
+              },
+          },
+      ]);
+      res.json(cusReport);
+  } catch (error) {
+      res.redirect('/500');
+  }
+};
+
+
+const getCoupon = async (req, res) => {
+  try {
+    const coupons = await Coupons.find();
+    res.render('admin/coupon', { allData: coupons });
+  } catch (error) {
+    res.redirect('/500');
+  }
+};
+
+const getAddCoupon = (req, res) => {
+  try {
+    res.render('admin/addCoupon');
+  } catch (error) {
+    console.log(error);
+    res.redirect('/500');
+  }
+};
+
+const postAddCoupon = async (req, res) => {
+  try {
+    const { code, offer, amount } = req.body;
+    const already = await Coupons.find({ coupon_code: code });
+    if (already.length !== 0) {
+      
+      res.redirect('/admin/addCoupon');
+    } else {
+      // eslint-disable-next-line prefer-destructuring
+      const Coupon = Coupons;
+      const coupon = new Coupon({
+        coupon_code: code,
+        offer,
+        max_amount: amount,
+      });
+      await coupon.save();
+      res.redirect('/admin/coupon');
+    }
+  } catch (error) {
+    res.redirect('/500');
+  }
+};
+
+const getDeleteCoupon = (req, res) => {
+  try {
+    Coupons.findOneAndDelete({ _id: req.params.id })
+      .then(() => {
+        res.redirect('/admin/coupon');
+      }).catch(() => {
+        res.redirect('/500');
+      });
+  } catch (error) {
+    res.redirect('/500');
+  }
+};
+
+
+
 module.exports = {
   adminHomeRender,
   adminLoginRender,
@@ -339,5 +626,16 @@ module.exports = {
   getEditProduct,
   postEditProduct,
   getDeleteProduct,
+  getOrders,
   logout,
+  changeOrderStatus,
+  orderCancel,
+  orderCompeleted,
+  getSalesReport,
+  getCoupon,
+  getAddCoupon,
+  postAddCoupon,
+  getDeleteCoupon,
+  salesCustomDate,
+  
 };

@@ -2,7 +2,8 @@
 
 let mongoose = require('mongoose');
 
-let mongoDB = `mongodb://127.0.0.1:27017/store`;
+let mongoDB = process.env.MONGO_URL;
+
 
 const connectDB = async () => {
     try {

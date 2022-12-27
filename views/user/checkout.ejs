@@ -253,10 +253,15 @@
     </div>
 
   </section>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+ 
 
-          <script >
-            function changeQuantity(cartId, productId, count) {
+<%- include('../partials/userFooter.ejs') %>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+
+<script>
+  function changeQuantity(cartId, productId, count) {
   $.ajax({
     url: '/user/cartQuantity',
     data: {
@@ -266,7 +271,10 @@
     },
     method: 'post',
     success: (res) => {
-      // document.getElementById('quantity').innerText = Number(qty) + Number(count);
+      // if (res.status) {
+      //   document.getElementById(productId).innerHTML = Number(qty) + Number(count);
+      // }
+
       location.reload();
       // $('#quantity').load(`${document.URL} #quantity`);
     },
@@ -304,106 +312,90 @@ function deleteProduct(cartId, productId) {
     },
   });
 }
+</script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+  crossorigin="anonymous"></script>
 
-          </script>
-
-          <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-            crossorigin="anonymous"></script>
-
-          <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-          <script>
-            $("#checkout").submit((e) => {
-              e.preventDefault();
-              Swal.fire({
-                title: 'Confirm?',
-                text: "Click confirm to proceed with your order",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Confirm'
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  Swal.fire({
-                    icon: 'success',
-                    title: 'Order Confirmed',                
-                  }).then(() => {
-                    $.ajax({
-                      url: "/user/orderConfirmed",
-                      method: "post",
-                      data: $("#checkout").serialize(),
-                      success: (response) => {
-                        console.log(response);
-                        if (response[0].success) {
-                          location.href = `/user/orderSuccess`;
-                        } else {
-                          razorPay(response[0].orders);
-                          console.log(response[0].orders)
-                        }
-                      },
-                    });
-                  })
-                }
-              })
-            });
-            // function razorPay(order) {
-            //   var options = {
-            //     key: "rzp_test_Qz0gX7o4vKhyTg", // Enter the Key ID generated from the Dashboard
-            //     amount: order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
-            //     currency: "INR",
-            //     name: "ComicMerchs",
-            //     description: "Test Transaction",
-            //     order_id: order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
-            //     handler: function (response) {
-            //       console.log(response);
-            //       verifyPayment(response, order);
-            //     },
-            //     prefill: {
-            //       name: "abin",
-            //       email: "abin@gmail.com",
-            //       contact: "8089000000",
-            //     },
-            //     notes: {
-            //       address: "Razorpay Corporate Office",
-            //     },
-            //     theme: {
-            //       color: "#3399cc",
-            //     },
-            //   };
-            //   var rzp1 = new Razorpay(options);
-            //   console.log('options are  jksdfskjdsdfjsl', options);
-            //   rzp1.on("payment.failed", function (response) {
-            //   });
-            //   rzp1.open();
-            // }
-            // function verifyPayment(payment, order) {
-            //   console.log('order is', order);
-            //   $.ajax({
-            //     url: "/user/verifyPayment",
-            //     data: {
-            //       payment,
-            //       order,
-            //     },
-            //     method: "post",
-            //     success: (response) => {
-            //       if (response.success) {
-            //         location.href = '/user/orderSuccess';
-            //         // location.href = '/user/orderSuccess';
-            //         console.log('payment success');
-            //       } else {
-            //         location.href = "/user/paymentFail";
-            //         console.log('payment failed');
-            //       }
-            //     },
-            //   });
-            // }
-          </script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
 
 
 
 
+  $("#checkout").submit((e) => {
+    e.preventDefault();
+   
+          $.ajax({
+            url: "/user/orderConfirmed",
+            method: "post",
+            data: $("#checkout").serialize(),
+            success: (response) => {
+              if (response[0].success) {
+                location.href = `/user/orderSuccess/`;
+              } else {
+                razorPay(response[0].orders);
+               
+              }
+            },
+          });
+        });
+    
+   
+  function razorPay(order) {
+    var options = {
+      key: "rzp_test_XUbZpvWoTVZ2ie", // Enter the Key ID generated from the Dashboard
+      amount: order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+      currency: "INR",
+      name: "FOODPANDA",
+      description: "Test Transaction",
+      order_id: order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+      handler: function (response) {
+        console.log(response);
+        verifyPayment(response, order);
+      },
+      prefill: {
+        name: "	Mohmmed Mishal K",
+        email: "mishalnunu@gmail.com",
+        contact: "8089000000",
+      },
+      notes: {
+        address: "Razorpay Corporate Office",
+      },
+      theme: {
+        color: "#F05196",
+      },
+    };
+    var rzp1 = new Razorpay(options);
+    console.log('options are  jksdfskjdsdfjsl', options);
+    rzp1.on("payment.failed", function (response) {
+    });
+    rzp1.open();
+  }
+  function verifyPayment(payment, order) {
+    console.log('order is', order);
+    $.ajax({
+      url: "/user/verifyPayment",
+      data: {
+        payment,
+        order,
+      },
+      method: "post",
+      success: (response) => {
+        if (response.success) {
+          location.href = '/user/orderSuccess';
+          // location.href = '/user/orderSuccess';
+          console.log('payment success');
+        } else {
+          location.href = "/user/paymentFail";
+          console.log('payment failed');
+        }
+      },
+    });
+  }
+</script>
 
+</body>
 
-<%- include('../partials/userFooter.ejs') %>
+</html>
