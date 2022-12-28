@@ -148,7 +148,7 @@ const signupRender = (req, res) => {
   }
 };
 
-const signupPost = async (req, res) => {
+const signupPost = async (req,res) => {
   firstname = req.body.firstName;
   email = req.body.email;
   phone = Number(req.body.phoneNumber);
@@ -174,6 +174,9 @@ const signupPost = async (req, res) => {
     });
   }
 };
+
+
+
 
 const GetOtp = async (req, res) => {
   try {

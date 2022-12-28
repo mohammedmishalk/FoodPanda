@@ -48,5 +48,5 @@ router.get('/addCoupon', verifyLogin.adminSession, controller.getAddCoupon);
 router.post('/addCoupon', verifyLogin.adminSession, controller.postAddCoupon);
 router.get('/deleteCoupon/:id', verifyLogin.adminSession, controller.getDeleteCoupon);
 router.get('/salesReport', verifyLogin.adminSession, controller.getSalesReport);
-router.post('/customdate', verifyLogin.adminSession, controller.salesCustomDate);
+
 module.exports = router;

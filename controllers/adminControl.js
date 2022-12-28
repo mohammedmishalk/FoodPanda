@@ -11,18 +11,52 @@ require('dotenv/config');
 
 let message = '';
 
-
-
-
-
-const adminHomeRender = (req, res) => {
-  const { session } = req;
-  if (session.userid && session.account_type === 'admin') {
-    res.render('admin/adminHome');
-  } else {
-    res.redirect('/admin/login');
+const adminHomeRender = async (req, res) => {
+  try {
+   
+    const userCount = await Users.countDocuments({});
+    const productCount = await Products.countDocuments({});
+    const orderData = await Orders.find({ orderStatus: { $ne: 'Cancelled' } });
+    const orderCount = await Orders.countDocuments({});
+    const pendingOrder = await Orders.find({ orderStatus: 'Pending' }).count();
+    const completed = await Orders.find({ orderStatus: 'Completed' }).count();
+    const delivered = await Orders.find({ orderStatus: 'Delivered' }).count();
+    const cancelled = await Orders.find({ orderStatus: 'Cancelled' }).count();
+    const cod = await Orders.find({ paymentMethod: 'cod' }).count();
+    const online = await Orders.find({ paymentMethod: 'online' }).count();
+ 
+    const totalAmount = orderData.reduce((accumulator, object) => {
+    
+      return (accumulator += object.totalAmount);
+    }, 0);
+    res.render('admin/adminHome', {
+      usercount: userCount,
+      productcount: productCount,
+      totalamount: totalAmount,
+      ordercount: orderCount,
+      pending: pendingOrder,
+      completed,
+      delivered,
+      cancelled,
+      cod,
+      online,
+    });
+  } catch (error) {
+    res.redirect('/500');
   }
 };
+
+
+
+
+// const adminHomeRender = (req, res) => {
+//   const { session } = req;
+//   if (session.userid && session.account_type === 'admin') {
+//     res.render('admin/adminHome');
+//   } else {
+//     res.redirect('/admin/login');
+//   }
+// };
 
 const adminLoginRender = (req, res) => {
   const { session } = req;
@@ -410,141 +444,111 @@ const orderCancel = (req, res) => {
 
 const getSalesReport = async (req, res) => {
   try {
-      const today = moment().startOf('day');
-      const endtoday = moment().endOf('day');
-      const monthstart = moment().startOf('month');
-      const monthend = moment().endOf('month');
-      const yearstart = moment().startOf('year');
-      const yearend = moment().endOf('year');
-      // const today = moment('09-12-2022', 'DD-MM-YYYY').startOf('day');
-      // const endtoday = moment('10-12-2022', 'DD-MM-YYYY').endOf('day');
-      const daliyReport = await model.Order.aggregate([
-          {
-              $match: {
-                  createdAt: {
-                      $gte: today.toDate(),
-                      $lte: endtoday.toDate(),
-                  },
-              },
+    const today = moment().startOf('day');
+    const endtoday = moment().endOf('day');
+    const monthstart = moment().startOf('month');
+    const monthend = moment().endOf('month');
+    const yearstart = moment().startOf('year');
+    const yearend = moment().endOf('year');
+    const daliyReport = await Orders.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: today.toDate(),
+            $lte: endtoday.toDate(),
           },
-          {
-              $lookup:
+        },
+      },
+      {
+        $lookup:
               {
-                  from: 'logins',
-                  localField: 'user_id',
-                  foreignField: 'user_id',
-                  as: 'user',
+                from: 'logins',
+                localField: 'user_id',
+                foreignField: '_id',
+                as: 'user',
               },
-          },
-          {
-              $project: {
-                  order_id: 1,
-                  user: 1,
-                  paymentStatus: 1,
-                  totalAmount: 1,
-                  orderStatus: 1,
-              },
-          },
-      ]);
-      const monthReport = await model.Order.aggregate([
-          {
-              $match: {
-                  createdAt: {
-                      $gte: monthstart.toDate(),
-                      $lte: monthend.toDate(),
-                  },
-              },
-          },
-          {
-              $lookup:
-              {
-                  from: 'logins',
-                  localField: 'user_id',
-                  foreignField: 'user_id',
-                  as: 'user',
-              },
-          },
-          {
-              $project: {
-                  order_id: 1,
-                  user: 1,
-                  paymentStatus: 1,
-                  totalAmount: 1,
-                  orderStatus: 1,
-              },
-          },
-      ]);
-      const yearReport = await model.Order.aggregate([
-          {
-              $match: {
-                  createdAt: {
-                      $gte: yearstart.toDate(),
-                      $lte: yearend.toDate(),
-                  },
-              },
-          },
-          {
-              $lookup:
-              {
-                  from: 'logins',
-                  localField: 'user_id',
-                  foreignField: 'user_id',
-                  as: 'user',
-              },
-          },
-          {
-              $project: {
-                  order_id: 1,
-                  user: 1,
-                  paymentStatus: 1,
-                  totalAmount: 1,
-                  orderStatus: 1,
-              },
-          },
-      ]);
-      res.render('admin/salesReport', { to: daliyReport, mo: monthReport, ye: yearReport });
-  } catch (error) {
-      res.redirect('/500');
-  }
-};
+      },
 
-const salesCustomDate = async (req, res) => {
-  try {
-      const { startDate, endDate } = req.body;
-      const start = moment(startDate, 'YYYY-MM-DD').startOf('day');
-      const end = moment(endDate, 'YYYY-MM-DD').endOf('day');
-
-      const cusReport = await model.Order.aggregate([
-          {
-              $match: {
-                  createdAt: {
-                      $gte: start.toDate(),
-                      $lte: end.toDate(),
-                  },
-              },
+      {
+        $project: {
+          order_id: 1,
+          user: 1,
+          paymentStatus: 1,
+          finalAmount: 1,
+          orderStatus: 1,
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+    ]);
+    console.log(daliyReport);
+    const monthReport = await Orders.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: monthstart.toDate(),
+            $lte: monthend.toDate(),
           },
-          {
-              $lookup:
+        },
+      },
+      {
+        $lookup:
               {
-                  from: 'logins',
-                  localField: 'user_id',
-                  foreignField: 'user_id',
-                  as: 'user',
+                from: 'logins',
+                localField: 'user_id',
+                foreignField: '_id',
+                as: 'user',
               },
+      },
+
+      {
+        $project: {
+          order_id: 1,
+          user: 1,
+          paymentStatus: 1,
+          finalAmount: 1,
+          orderStatus: 1,
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+    ]);
+    const yearReport = await Orders.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: yearstart.toDate(),
+            $lte: yearend.toDate(),
           },
-          {
-              $project: {
-                  order_id: 1,
-                  user: 1,
-                  paymentStatus: 1,
-                  totalAmount: 1,
-                  orderStatus: 1,
+        },
+      },
+      {
+        $lookup:
+              {
+                from: 'logins',
+                localField: 'user_id',
+                foreignField: '_id',
+                as: 'user',
               },
-          },
-      ]);
-      res.json(cusReport);
+      },
+      {
+        $project: {
+          order_id: 1,
+          user: 1,
+          paymentStatus: 1,
+          totalAmount: 1,
+          orderStatus: 1,
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+    ]);
+    res.render('admin/salesReport', { today: daliyReport, month: monthReport, year: yearReport });
   } catch (error) {
-      res.redirect('/500');
+    res.redirect('/500');
   }
 };
 
@@ -636,6 +640,6 @@ module.exports = {
   getAddCoupon,
   postAddCoupon,
   getDeleteCoupon,
-  salesCustomDate,
+  
   
 };

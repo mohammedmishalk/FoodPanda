@@ -36,7 +36,7 @@
             </tr>
           </thead>
           <tbody class="text-center">
-            <% to.forEach(data =>{ %>
+            <% today.forEach(data =>{ %>
             
             <tr>
               <td><%= data.order_id %></td>
@@ -52,7 +52,7 @@
           <button
             class="btn btn-danger"
             id="today-btn"
-            <% if (to.length == 0) { %>
+            <% if (today.length == 0) { %>
               disabled
             <% } %>
             onclick="CreatePDFfromHTML('today-table')"
@@ -83,7 +83,7 @@
             </tr>
           </thead>
           <tbody class="text-center">
-            <% mo.forEach(element => { %>
+            <% month.forEach(element => { %>
             <tr>
               <td><%= element.order_id %></td>
               <td><%= element.user.firstName %></td>
@@ -98,7 +98,7 @@
           <button
             class="btn btn-danger"
             id="today-btn"
-            <% if (mo.length == 0) { %>
+            <% if (month.length == 0) { %>
               disabled
             <% } %>
             onclick="CreatePDFfromHTML('month-table')"
@@ -129,7 +129,7 @@
             </tr>
           </thead>
           <tbody class="text-center">
-            <% ye.forEach(element => { %>
+            <% year.forEach(element => { %>
             <tr>
               <td><%= element.order_id %></td>
               <td><%= element.user.full_name %></td>
@@ -144,7 +144,7 @@
           <button
             class="btn btn-danger mb-5"
             id="today-btn"
-            <% if (ye.length == 0) { %>
+            <% if (year.length == 0) { %>
               disabled
             <% } %>
             onclick="CreatePDFfromHTML('year-table')"
