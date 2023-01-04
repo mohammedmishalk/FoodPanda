@@ -380,22 +380,22 @@
                                   <% if (order.orderStatus === 'Pending') { %>
                                     <option value="Pending" selected>Pending</option>
                                     <option value="Confirmed" >Confimed</option>
-                                    <option value="Shipped">Shipped</option>
+                                    <option value="out for delivery">out for delivery</option>
                                     <option value="Delivered">Delivered</option>
                                   <% } else if (order.orderStatus === 'Confirmed') {%>
                                     <option value="Pending">Pending</option>
                                     <option value="Confirmed" selected>Confimed</option>
-                                    <option value="Shipped">Shipped</option>
+                                    <option value="out for delivery">out for delivery</option>
                                     <option value="Delivered">Delivered</option>
-                                  <% } else if (order.orderStatus === 'Shipped') {%>
+                                  <% } else if (order.orderStatus === 'out for delivery') {%>
                                     <option value="Pending">Pending</option>
                                     <option value="Confirmed">Confimed</option>
-                                    <option value="Shipped" selected>Shipped</option>
+                                    <option value="out for deliveryv" selected>out for delivery</option>
                                     <option value="Delivered">Delivered</option>
                                     <% } else if (order.orderStatus === 'Delivered') {%>
                                       <option value="Pending">Pending</option>
                                       <option value="Confiemed">Confimed</option>
-                                      <option value="Shipped">Shipped</option>
+                                      <option value="out for delivery">out for delivery</option>
                                       <option value="Delivered" selected>Delivered</option>
                                     <% } else if (order.orderStatus === 'Completed') {%>
                                       <option value="Completed">Completed</option>

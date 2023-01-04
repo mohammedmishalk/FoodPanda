@@ -182,7 +182,7 @@ const GetOtp = async (req, res) => {
   try {
     res.render("user/otp");
   } catch (error) {
-    console.log(error.message);
+    console.log(error.message);tS
   }
 };
 
@@ -448,13 +448,15 @@ const postChangePasswod =async (req, res) => {
   try {
     const uid = req.session.userid;
     const { currentPassword, password } = req.body;
+    const hash = await bcrypt.hash(password, 10);
     Users.findOne({ user_id: uid }).then(async (result) => {
-      const passwordMatch = await bcrypt.compare(password, result.password);
+      const passwordMatch = await bcrypt.compare(currentPassword, result.password);
+      // console.log(result)
       if (passwordMatch) {
         if (password === currentPassword) {
           res.render('user/changePassword', { message: 'old password and new pasword is same' });
         } else {
-          Users.findOneAndUpdate({ user_id: uid }, { password }).then(() => {
+          Users.findOneAndUpdate({ user_id: uid }, { hash }).then(() => {
             res.redirect('/user/profile');
           }).catch(() => {
             res.redirect('/404');
@@ -622,9 +624,9 @@ const confirmOrder = (req, res) => {
             paymentMethod: paymethod,
             expectedDelivery: moment().add(4, 'days').format('MMM Do YY'),
           });
-          // eslint-disable-next-line no-unused-vars
+       
           order.save().then((done) => {
-            // eslint-disable-next-line semi, no-underscore-dangle
+          
             const oid = done._id;
             Carts.deleteOne({ user_id: uid }).then(() => {
               if (paymethod === 'cod') {

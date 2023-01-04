@@ -85,13 +85,13 @@
                             </div> -->
                             <% if(session) { %>
                                 <div class="d-flex">
-                                    <a href="http://localhost:3000/user/addToCart/<%= data._id %>">
+                                    <a href="/user/addToCart/<%= data._id %>">
                                         <button id="cartButton" class="btn btn-outline-dark mt-auto">Add
                                             to
                                             Cart</button></a>
                                     <% }else{ %>
                                         <div class="d-flex">
-                                            <a href="http://localhost:3000/user/login"><button
+                                            <a href="/user/login"><button
                                                     class="btn btn-outline-dark mt-auto"
                                                     id="addToCart">Add
                                                     to Cart</button></a>
