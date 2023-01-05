@@ -17,16 +17,24 @@
             <div class="row mb-5">
                 <div class="col-12 section-title text-center mb-5">
                     <h2 class="d-block">Our Dishes</h2>
-    
-                    <ul style="margin-left: -40px" class="product-category">
-                        <li><a href="/shop/menu" class="active">All</a></li>
-                        <li><a href="/shop/pizza" class="">Pizza</a></li>
-                        <li><a href="/shop/sides" class="">Sides</a></li>
-                        <li><a href="/shop/chinese" class="">Chinese</a></li>
-                        <li><a href="/shop/drinks" class="">Drinks</a></li>
-    
-    
-                    </ul>
+                    <form action="/user/store" method="post">
+                        <div class="d-flex heading py-3 my-5 px-5">
+                            <input type="text" class="form-control me-2" placeholder="Search"
+                                name="searchinput" id="search-input" />
+                            <button type="submit" id="searchbtn" class="btn btn-primary btn-sm">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <span>Search</span>
+                                </div>
+                            </button>
+                        </div>
+                    </form>
+                    <div id="collapseOne" class="collapse show" data-parent="#accordionExample">
+                        <div class="card-body">
+                            <div class="shop__sidebar__categories">
+                                
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -40,7 +48,7 @@
                     
                     
                     <div class="wine_v_1 text-center pb-4">
-                        <a href="#l" class="thumbnail d-block mb-4"><img style="width: 250px; height: 200px;" src="/<%= data.image %>" alt="Image" class="img-fluid"></a>
+                        <a href="#l" class="thumbnail d-block mb-4"><img style="width: 250px; height: 200px;" src="/<%= data.image[0].url %>" alt="Image" class="img-fluid"></a>
                         <div>
                             <h3 class="heading mb-1"><a href="#"><%= data.item_name %></a></h3>
                             <span class="price">Rs.<%= data.price %></span>

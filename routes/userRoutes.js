@@ -37,6 +37,11 @@ router.get('/orderSuccess', verifyLogin.userSession, controller.orderSuccess);
 router.get('/orders', verifyLogin.userSession, controller.getOrders);
 router.post('/verifyPayment', verifyLogin.userSession, controller.verifyPayment);
 router.get('/paymentFail', verifyLogin.userSession, controller.paymentFailure);
-
+router.post('/store', controller.search);
+// router.post("/search",verifyLogin.userSession,controller.Search)
+router.get('/forgotpassword',controller.forgotPassword)
+router.post('/forgotpassword',controller.postforgotPassword)
+router.post('/resetpassotp',controller.postotpsignup)
+router.post('/newpassword',controller.postNewPassword)
 
 module.exports = router;   

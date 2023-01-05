@@ -59,6 +59,7 @@
           >
             Download As PDF
           </button>
+          <button class="btn btn-danger" onclick="downloadExcel()">Download Excel</button>
         </div>
       </div>
     </div>
@@ -105,6 +106,7 @@
           >
             Download As PDF
           </button>
+          <button class="btn btn-danger" onclick="downloadExcel()">Download Excel</button>
         </div>
       </div>
     </div>
@@ -151,7 +153,9 @@
           >
             Download As PDF
           </button>
+          <button class="btn btn-danger mb-5" onclick="downloadExcel()">Download Excel</button>
         </div>
+        
       </div>
     </div>
   </section>
@@ -231,6 +235,24 @@ function CreatePDFfromHTML(id) {
   });
 }
 
+const csvContent =
+          'data:text/csv;charset=utf-8,' +
+          header.join(',') +
+          '\n' +
+          rowss.map((row) => row.join(',')).join('\n');
+
+
+        function downloadExcel() {
+
+          const encodedUri = encodeURI(csvContent);
+          const link = document.createElement('a');
+          link.href = encodedUri;;
+          link.download = 'orders.csv';
+          link.click();
+        }
+
+
+
 function sepDate(value) {
   $.ajax({
     url: '/admin/salesreport/customdate',
@@ -246,7 +268,10 @@ function sepDate(value) {
   });
 }
 </script>
+<script>
+  $("#kt_daterangepicker_1").daterangepicker();
 
+</script>
 <script>
 $(document).ready(function () {
     $('#tableForm').DataTable();
@@ -262,7 +287,11 @@ integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vx
 crossorigin="anonymous"></script>
 
 
-
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+<script type="text/javascript" src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
 
 
 

@@ -397,7 +397,7 @@ const getCheckout = async (req, res) => {
     {
       $addFields: {
         productPrice: {
-          $sum: { $multiply: ['$productQuantity', '$productDetail.cost'] },
+          $sum: { $multiply: ['$productQuantity', '$productDetail.price'] },
         },
       },
     },
@@ -786,6 +786,132 @@ const paymentFailure = (req, res) => {
 };
 
 
+forgotPassword= (req, res) => {
+  try {
+    user = req.session.userid;
+    if (user) {
+      res.redirect("/user/login");
+    } else {
+      res.render("user/forgotpassword");
+    }
+  } catch (error) {
+    res.render("user/404");
+  }
+},
+
+postforgotPassword= async (req, res) => {
+  
+    let Data = req.body.email;
+
+    let userData = await Users.findOne({ email: Data });
+    let mailDetails = {
+      from: "mishalnunu@gmail.com",
+      to: Data,
+      subject: "food panda ACCOUNT VERIFICATION",
+      html: `<p>YOUR OTP FOR RESET PASSWORD IS <h1> ${OTP} <h1> </p>`,
+    };
+    mailTransporter.sendMail(mailDetails,function (err, data) {
+      if (err) {
+        console.log("error occurs");
+      } else {
+        console.log("Email Sent Successfully");
+        res.render("user/resetpassotp", { Data });
+      }
+    });
+  } 
+
+
+postotpsignup= async (req, res) => {
+  let data = req.body.details;
+
+  try {
+    let otp = req.body.otp;
+    if (OTP == otp) {
+      console.log("matchedd");
+      res.render("user/resetpassword", { data });
+    } else {
+      console.log("error");
+    }
+  } catch (error) {
+    res.render("404");
+  }
+},
+
+postNewPassword= async (req, res) => {
+  try {
+    const data = req.body;
+    if (data.password && data.confirmpassword) {
+      if (data.confirmpassword) {
+        let newPassword = await bcrypt.hash(data.password, 10);
+
+        Users.updateOne(
+          { email: data.email },
+          {
+            $set: {
+              password: newPassword,
+            },
+          }
+        ).then((data) => {
+          console.log(data);
+          res.redirect("/user/login");
+        });
+      }
+    }
+  } catch (error) {
+    res.render("404");
+  }
+}
+
+const search = async (req, res) => {
+  const { session } = req;
+  try {
+    let customer;
+    const pageNum = req.query.page;
+    const perPage = 6;
+    let count = 0;
+    const searchvalue = req.body.searchinput;
+    const text = 'Results for your search: ';
+    const docCount = await Products.find({
+      $and: [
+        { difference: { $gt: 0 } },
+        { difference: { $subtract: ['$stock', 'soldCount'] } },
+        { item_name: new RegExp(searchvalue, 'i') },
+      ],
+    })
+      .countDocuments();
+
+    Products.find({
+      $and: [
+        { isBlock: false },
+        { difference: { $subtract: ['$stock', 'soldCount'] } },
+        { $gt: 0 },
+        { item_name: new RegExp(searchvalue, 'i') },
+      ],
+    })
+      .skip((pageNum - 1) * perPage)
+      .limit(perPage)
+      .then((products) => {
+        Carts.findOne({ user_id: req.session.userID }).then((doc) => {
+          if (doc) {
+            count = doc.product.length;
+          }
+          if (session.userid && session.account_type === 'user') {
+            customer = true;
+            res.render('user/foodview', { page: '/', docCount, pageNum, pages: Math.ceil(docCount / perPage), customer, products, count, searchvalue, text ,session});
+          } else {
+            customer = false;
+            res.render('user/foodview', { page: '/', docCount, pageNum, pages: Math.ceil(docCount / perPage), customer, products, count, searchvalue, text,session });
+          }
+        });
+      })
+      .catch(() => {
+        res.redirect('/500');
+      });
+  } catch (error) {
+    res.redirect('/500');
+  }
+};
+
 module.exports = {
   loginRender,
   loginPost,
@@ -814,6 +940,11 @@ module.exports = {
   getOrders,
   verifyPayment,
   paymentFailure,
+  forgotPassword,
+  postforgotPassword,
+  postotpsignup,
+  postNewPassword,
+  search
   
  
  

@@ -4,7 +4,7 @@ const Categories = require('../models/categories');
 const Products = require('../models/products');
 const Orders = require('../models/orders');
 const Coupons = require('../models/coupon');
-
+const Banners = require('../models/banner');
 
 require('dotenv/config');
 
@@ -272,7 +272,7 @@ const getAddProduct = async (req, res) => {
 
 const postAddProduct = async (req, res) => {
   try {
-    const IMAGE_PATH = (req.file.path).slice(7)
+    // const IMAGE_PATH = (req.file.path).slice(7)
 
 
     const products = new Products({
@@ -283,9 +283,10 @@ const postAddProduct = async (req, res) => {
       stock:req.body.qty,
       soldCount: 10,
 
-      image:IMAGE_PATH,
+      // image:IMAGE_PATH,
      
     });
+    products.image = req.files.map((f) => ({ url: f.path, filename: f.filename }));
     const productsData = await products.save();
     if (productsData){
       res.redirect('/admin/products');
@@ -325,6 +326,8 @@ const postEditProduct = (req, res) => {
       des : req.body.des,
       price: req.body.price,
       category: req.body.cat,
+      stock:req.body.qty,
+      soldCount: 10,
      
     }
   )
@@ -607,7 +610,49 @@ const getDeleteCoupon = (req, res) => {
   }
 };
 
+const getBanner = async (req, res) => {
+  try {
+    const banner = await Banners.find();
+    res.render('admin/banner', { banner });
+  } catch (error) {
+    res.redirect('/500');
+  }
+};
 
+const getAddBanner = (req, res) => {
+  res.render('admin/addBanner');
+};
+
+const postAddBanner = async (req, res) => {
+  try {
+    console.log(req.body);
+    const Banner = new Banners({
+      name: req.body.Name,
+    });
+    console.log(req.files);
+    Banner.image = req.files.map((f) => ({ url: f.path, filename: f.filename }));
+    const bannerData = await Banner.save();
+    if (bannerData) {
+      res.redirect('/admin/banner');
+    } else {
+      res.render('admin/addBanner');
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+const getDeleteBanner = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(id);
+    await Banners.deleteOne({ _id: id }).then(() => {
+      res.redirect('/admin/banner');
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 
 module.exports = {
   adminHomeRender,
@@ -640,6 +685,10 @@ module.exports = {
   getAddCoupon,
   postAddCoupon,
   getDeleteCoupon,
+  getBanner,
+  getAddBanner,
+  postAddBanner,
+  getDeleteBanner,
   
   
 };
